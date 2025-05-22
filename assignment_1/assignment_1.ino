@@ -1,11 +1,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <Adafruit_BNO08x.h>
-// #include <WiFi.h>
-
-
-// const char *networkName= "Limb Tracker";
-// const char *networkPswd = "engee523"
 
 
 #define IMU1_CS 34
@@ -24,8 +19,10 @@ struct raw_data {
   float accel_x, accel_y, accel_z;
   float accel_roll, accel_pitch;
 
+  float mag_yaw;
+
   float gyro_x, gyro_y, gyro_z;
-  float gyro_roll, gyro_pitch, gyro_yaw = 0.0;
+  float gyro_roll, gyro_pitch, gyro_yaw;
 
   float mag_x, mag_y, mag_z;
 } rd;
@@ -90,13 +87,6 @@ void loop() {
         rd.accel_x = sensorValue.un.accelerometer.x;
         rd.accel_y = sensorValue.un.accelerometer.y;
         rd.accel_z = sensorValue.un.accelerometer.z;
-        rd.accel_roll = atan2f(rd.accel_y, rd.accel_z) * RAD_TO_DEG;
-        rd.accel_pitch = atan2f(-rd.accel_x, sqrtf(rd.accel_y * rd.accel_y + rd.accel_z * rd.accel_z)) * RAD_TO_DEG;
-
-        // Serial.print("ACCEL (RP): "); 
-        Serial.print(millis()/1000); Serial.print("\t");
-        Serial.println(rd.accel_pitch); Serial.print("\t");
-        Serial.print(rd.accel_roll);
 
         break;
       // case SH2_GYROSCOPE_CALIBRATED: 
@@ -120,10 +110,10 @@ void loop() {
       //   Serial.println(rd.gyro_yaw);
 
       //   break;
-      // case SH2_MAGNETIC_FIELD_CALIBRATED:
-        // rd.mag_x = sensorValue.un.magneticField.x;
-        // rd.mag_y = sensorValue.un.magneticField.y;
-        // rd.mag_z = sensorValue.un.magneticField.z;
+      case SH2_MAGNETIC_FIELD_CALIBRATED:
+        rd.mag_x = sensorValue.un.magneticField.x;
+        rd.mag_y = sensorValue.un.magneticField.y;
+        rd.mag_z = sensorValue.un.magneticField.z;
 
         // Serial.print("MAG: ");
         // Serial.print(rd.mag_x);
@@ -132,8 +122,16 @@ void loop() {
         // Serial.print("\t");
         // Serial.println(rd.mag_z);
 
-        // break;
+        break;
       }
+      rd.accel_roll = atan2f(rd.accel_y, rd.accel_z) * RAD_TO_DEG;
+      rd.accel_pitch = atan2f(-rd.accel_x, sqrtf(rd.accel_y * rd.accel_y + rd.accel_z * rd.accel_z)) * RAD_TO_DEG;
+      rd.mag_yaw = atan2f(rd.mag_y, rd.mag_x) * RAD_TO_DEG;
+      // Serial.print("ACCEL (RP): "); 
+      Serial.print(millis()/1000); Serial.print("\t");
+      Serial.print(rd.accel_pitch); Serial.print("\t");
+      Serial.print(rd.accel_roll); Serial.print("\t");
+      Serial.println(rd.mag_yaw);
     }
     delay(10);
 }
