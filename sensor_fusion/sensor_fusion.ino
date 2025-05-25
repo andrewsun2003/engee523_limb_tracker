@@ -13,6 +13,7 @@
 #define BOOTN 1
 
 #define RAD_TO_DEG 57.2958
+#define DEG_TO_RAD 0.017453
 
 
 struct raw_data {   // Raw data
@@ -253,9 +254,6 @@ void loop() {
   if (imu.getSensorEvent(&sensorValue)) {
     switch (sensorValue.sensorId) {
       case SH2_ACCELEROMETER: {
-        // unsigned long currentTime = micros();
-        // float dt = (currentTime - lastTime) / 1000000.0;
-        // lastTime = currentTime;
         rd.accel_x = sensorValue.un.accelerometer.x;
         rd.accel_y = sensorValue.un.accelerometer.y;
         rd.accel_z = sensorValue.un.accelerometer.z;
@@ -297,7 +295,26 @@ void loop() {
         rd.mag_y = sensorValue.un.magneticField.y;
         rd.mag_z = sensorValue.un.magneticField.z;
 
-        rad.mag_yaw = atan2f(rd.mag_y, rd.mag_x) * RAD_TO_DEG;
+        // rad.mag_yaw = atan2f(-rd.mag_y, rd.mag_x) * RAD_TO_DEG;
+        float roll = rad.accel_roll * DEG_TO_RAD;
+        float pitch = rad.accel_pitch * DEG_TO_RAD;
+        // float Mx = rd.mag_x * cosf(pitch) + rd.mag_z * sinf(pitch);
+        // float My = rd.mag_x * sinf(roll) * sinf(pitch) + rd.mag_y * cosf(roll) - rd.mag_z * sinf(roll) * cosf(pitch);
+        // rad.mag_yaw = atan2f(-My, Mx) * RAD_TO_DEG;
+
+        // float Mx = rd.mag_x * cosf(pitch) + rd.mag_y * sinf(roll) * sin(pitch) + rd.mag_z * cosf(roll) * sinf(pitch);
+        // float My = rd.mag_y * cosf(roll) - rd.mag_z * sinf(roll);
+
+        float Mx = rd.mag_x * cosf(pitch) + rd.mag_z * sinf(pitch);
+        float My = rd.mag_x * sinf(roll) * sinf(pitch) + 
+           rd.mag_y * cosf(roll) - 
+           rd.mag_z * sinf(roll) * cosf(pitch);
+           rd.mag_y * cosf(roll) - 
+           rd.mag_z * sinf(roll) * cosf(pitch);
+
+        rad.mag_yaw = atan2f(-My, Mx) * RAD_TO_DEG + 100;
+
+        rad.mag_yaw = wrap_angle(rad.mag_yaw);
 
         break;
       }
