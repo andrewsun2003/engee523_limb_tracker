@@ -5,9 +5,12 @@
 #include "AsyncUDP.h"
 
 
-#define IMU1_CS 1
+#define IMU1_CS 4
 #define IMU1_INT 44
-#define IMU1_RESET 2
+#define IMU1_RESET 43
+#define PS0 6
+#define PS1 5
+#define BOOTN 3
 
 #define RAD_TO_DEG 57.2958
 #define DEG_TO_RAD 0.017453
@@ -102,6 +105,14 @@ void setReports() {
 void setup(void) {
   // Serial.begin(115200);
   // while (!Serial) { delay(10); }
+  pinMode(PS0, OUTPUT);
+  digitalWrite(PS0, HIGH);
+
+  pinMode(PS1, OUTPUT);
+  digitalWrite(PS1, HIGH);
+
+  pinMode(BOOTN, OUTPUT);
+  digitalWrite(BOOTN, HIGH);
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -339,22 +350,22 @@ void loop() {
 
     ekf_update(&rad, x, P, A, Q, R, I);
     
-    // Serial.print(millis()/1000); Serial.print("\t");
+    Serial.print(millis()/1000); Serial.print("\t");
 
-    // // RAW DATA
-    // Serial.print(rad.accel_roll); Serial.print("\t");
-    // Serial.print(rad.accel_pitch); Serial.print("\t");
-    // Serial.print(rad.mag_yaw); Serial.print("\t");
+    // RAW DATA
+    Serial.print(rad.accel_roll); Serial.print("\t");
+    Serial.print(rad.accel_pitch); Serial.print("\t");
+    Serial.print(rad.mag_yaw); Serial.print("\t");
 
-    // // SENSOR FUSION DATA (APPLIED EKF)
-    // Serial.print(x[0]); Serial.print("\t");
-    // Serial.print(x[1]); Serial.print("\t");
-    // Serial.print(x[2]); Serial.print("\t");
+    // SENSOR FUSION DATA (APPLIED EKF)
+    Serial.print(x[0]); Serial.print("\t");
+    Serial.print(x[1]); Serial.print("\t");
+    Serial.print(x[2]); Serial.print("\t");
 
-    // // DMP DATA 
-    // Serial.print(ypr.roll); Serial.print("\t");
-    // Serial.print(ypr.pitch);  Serial.print("\t");
-    // Serial.println(ypr.yaw);
+    // DMP DATA 
+    Serial.print(ypr.roll); Serial.print("\t");
+    Serial.print(ypr.pitch);  Serial.print("\t");
+    Serial.println(ypr.yaw);
 
     float roll = x[0];
     float pitch = x[1];
