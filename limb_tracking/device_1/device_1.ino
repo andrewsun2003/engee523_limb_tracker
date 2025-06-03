@@ -65,12 +65,6 @@ const float I[3][3] = {
   {0, 0, 1}
 };
 
-struct euler_t {
-  float yaw;
-  float pitch;
-  float roll;
-} ypr;
-
 Adafruit_BNO08x imu(IMU1_RESET);
 sh2_SensorValue_t sensorValue;
 
@@ -91,14 +85,6 @@ void setReports() {
   }
   if (!imu.enableReport(SH2_MAGNETIC_FIELD_CALIBRATED, reportInterval)) {
     Serial.println("Could not enable magnetometer");
-    while (1) { delay(10); }
-  }
-  if (!imu.enableReport(SH2_GYRO_INTEGRATED_RV, reportInterval)) {
-    Serial.println("Could not enable stabilized remote vector");
-    while (1) { delay(10); }
-  }
-  if (!imu.enableReport(SH2_ARVR_STABILIZED_RV, reportInterval)) {
-    Serial.println("Could not enable stabilized remote vector");
     while (1) { delay(10); }
   }
 }
@@ -237,33 +223,6 @@ void ekf_update(struct raw_angle_data *rad, float x[3], float P[3][3], const flo
 }
 
 
-void quaternionToEuler(float qr, float qi, float qj, float qk, euler_t* ypr, bool degrees = false) {
-
-    float sqr = sq(qr);
-    float sqi = sq(qi);
-    float sqj = sq(qj);
-    float sqk = sq(qk);
-
-    ypr->yaw = atan2(2.0 * (qi * qj + qk * qr), (sqi - sqj - sqk + sqr));
-    ypr->pitch = asin(-2.0 * (qi * qk - qj * qr) / (sqi + sqj + sqk + sqr));
-    ypr->roll = atan2(2.0 * (qj * qk + qi * qr), (-sqi - sqj + sqk + sqr));
-
-    if (degrees) {
-      ypr->yaw *= RAD_TO_DEG;
-      ypr->pitch *= RAD_TO_DEG;
-      ypr->roll *= RAD_TO_DEG;
-    }
-}
-
-void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* ypr, bool degrees = false) {
-    quaternionToEuler(rotational_vector->real, rotational_vector->i, rotational_vector->j, rotational_vector->k, ypr, degrees);
-}
-
-void quaternionToEulerGI(sh2_GyroIntegratedRV_t* rotational_vector, euler_t* ypr, bool degrees = false) {
-    quaternionToEuler(rotational_vector->real, rotational_vector->i, rotational_vector->j, rotational_vector->k, ypr, degrees);
-}
-
-
 void loop() {
   if (imu.getSensorEvent(&sensorValue)) {
     switch (sensorValue.sensorId) {
@@ -332,15 +291,6 @@ void loop() {
 
         break;
       }
-      case SH2_ARVR_STABILIZED_RV:
-        quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
-
-        break;
-      case SH2_GYRO_INTEGRATED_RV:
-        // faster (more noise?)
-        quaternionToEulerGI(&sensorValue.un.gyroIntegratedRV, &ypr, true);
-
-        break;
     }
 
     ekf_update(&rad, x, P, A, Q, R, I);
@@ -356,11 +306,6 @@ void loop() {
     // Serial.print(x[0]); Serial.print("\t");
     // Serial.print(x[1]); Serial.print("\t");
     // Serial.print(x[2]); Serial.print("\t");
-
-    // // DMP DATA 
-    // Serial.print(ypr.roll); Serial.print("\t");
-    // Serial.print(ypr.pitch);  Serial.print("\t");
-    // Serial.println(ypr.yaw);
 
     float roll = x[0];
     float pitch = x[1];
