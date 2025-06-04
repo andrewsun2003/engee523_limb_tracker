@@ -285,7 +285,7 @@ void loop() {
            rd.mag_y * cosf(roll) - 
            rd.mag_z * sinf(roll) * cosf(pitch);
 
-        rad.mag_yaw = atan2f(-My, Mx) * RAD_TO_DEG + 100;
+        rad.mag_yaw = atan2f(-My, Mx) * RAD_TO_DEG;
 
         rad.mag_yaw = wrap_angle(rad.mag_yaw);
 
