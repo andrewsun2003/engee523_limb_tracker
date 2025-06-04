@@ -25,9 +25,9 @@ hip_knee_length = 5
 knee_shin_length = 5.5
 
 hip_pos = vector(0, 0, 0)
-chest_pos = hip_pos + vector(0, chest_hip_length, 0)
-knee_pos = hip_pos + vector(0, -hip_knee_length, 0)
-shin_pos = knee_pos + vector(0, -knee_shin_length, 0)
+chest_pos = hip_pos + vector(0, -chest_hip_length, 0)
+knee_pos = hip_pos + vector(0, hip_knee_length, 0)
+shin_pos = knee_pos + vector(0, knee_shin_length, 0)
 
 chest_hip = cylinder(pos=chest_pos, axis=hip_pos - chest_pos, radius=0.1, color=color.orange)
 hip_knee = cylinder(pos=hip_pos, axis=knee_pos - hip_pos, radius=0.1, color=color.blue)
@@ -100,92 +100,10 @@ def rotation_matrix(roll, pitch, yaw):
 
 
 def update_limb_orientation():
-    pitch1, roll1, yaw1 = latest_data["IMU 1"]  # Chest to Hip
-    pitch2, roll2, yaw2 = latest_data["IMU 2"]  # Hip to Knee
-    pitch3, roll3, yaw3 = latest_data["IMU 3"]  # Knee to Shin
+    pitch1, yaw1, roll1 = latest_data["IMU 1"]  # Chest to Hip
+    roll2, yaw2, pitch2 = latest_data["IMU 2"]  # Hip to Knee
+    roll3, yaw3, pitch3 = latest_data["IMU 3"]  # Knee to Shin
 
-    #     # Get matrices
-    # R1 = rotation_matrix(roll1, pitch1, yaw1)
-    # R2 = rotation_matrix(roll2, pitch2, yaw2)
-    # R3 = rotation_matrix(roll3, pitch3, yaw3)
-
-    # # Get direction vectors using full rotation
-    # dir1 = vector(*R1 @ np.array([0, -chest_hip_length, 0]))
-    # dir2 = vector(*R2 @ np.array([0, -hip_knee_length, 0]))
-    # dir3 = vector(*R3 @ np.array([0, -knee_shin_length, 0]))
-
-    # # Update joint positions
-    # chest_pos_new = hip_pos + dir1
-    # knee_pos_new = hip_pos + dir2
-    # shin_pos_new = knee_pos_new + dir3
-
-    # # Update cylinders
-    # chest_hip.pos = chest_pos_new
-    # chest_hip.axis = hip_pos - chest_pos_new
-
-    # hip_knee.pos = hip_pos
-    # hip_knee.axis = knee_pos_new - hip_pos
-
-    # knee_shin.pos = knee_pos_new
-    # knee_shin.axis = shin_pos_new - knee_pos_new
-
-    # # Update arrows using respective rotation matrices
-    # for arrows, origin, R in zip(
-    #     [axes_chest, axes_hip, axes_knee, axes_shin],
-    #     [chest_pos_new, hip_pos, knee_pos_new, shin_pos_new],
-    #     [R1, np.eye(3), R2, R3]
-    # ):
-    #     x_arrow, y_arrow, z_arrow = arrows
-    #     x_arrow.pos = origin
-    #     y_arrow.pos = origin
-    #     z_arrow.pos = origin
-
-    #     x_arrow.axis = vector(*R @ np.array([axis_len, 0, 0]))
-    #     y_arrow.axis = vector(*R @ np.array([0, axis_len, 0]))
-    #     z_arrow.axis = vector(*R @ np.array([0, 0, axis_len]))
-
-
-    #test
-    # def update_limb_orientation():
-    # roll1, pitch1, yaw1 = latest_data["IMU 1"]  # Chest to Hip
-    # roll2, pitch2, yaw2 = latest_data["IMU 2"]  # Hip to Knee
-    # roll3, pitch3, yaw3 = latest_data["IMU 3"]  # Knee to Shin
-
-    # # Step 1: Compute rotation matrices
-    # R1 = rotation_matrix(roll1, pitch1, yaw1)  # chest to hip
-    # R2_local = rotation_matrix(roll2, pitch2, yaw2)  # relative: hip to knee
-    # R3_local = rotation_matrix(roll3, pitch3, yaw3)  # relative: knee to shin
-
-    # # Step 2: Chain rotations
-    # R2 = R1 @ R2_local  # global orientation of hip to knee
-    # R3 = R2 @ R3_local  # global orientation of knee to shin
-
-    # # Step 3: Compute joint positions
-    # chest_pos_new = hip_pos + vector(*R1 @ np.array([0, chest_hip_length, 0]))
-    # knee_pos_new = hip_pos + vector(*R2 @ np.array([0, -hip_knee_length, 0]))
-    # shin_pos_new = knee_pos_new + vector(*R3 @ np.array([0, -knee_shin_length, 0]))
-
-    # # Step 4: Update limb cylinders
-    # chest_hip.pos = chest_pos_new
-    # chest_hip.axis = hip_pos - chest_pos_new
-
-    # hip_knee.pos = hip_pos
-    # hip_knee.axis = knee_pos_new - hip_pos
-
-    # knee_shin.pos = knee_pos_new
-    # knee_shin.axis = shin_pos_new - knee_pos_new
-
-    # # Step 5: Update arrows (axes) for visual orientation
-    # for arrows, origin, R in zip(
-    #     [axes_chest, axes_hip, axes_knee, axes_shin],
-    #     [chest_pos_new, hip_pos, knee_pos_new, shin_pos_new],
-    #     [R1, np.eye(3), R2, R3]
-    # ):
-    #     x_arrow, y_arrow, z_arrow = arrows
-    #     x_arrow.pos = y_arrow.pos = z_arrow.pos = origin
-    #     x_arrow.axis = vector(*R @ np.array([axis_len, 0, 0]))
-    #     y_arrow.axis = vector(*R @ np.array([0, axis_len, 0]))
-    #     z_arrow.axis = vector(*R @ np.array([0, 0, axis_len]))
     # Compute direction vectors
     dir1 = euler_to_vector(chest_hip_length, roll1, pitch1, yaw1)
     dir2 = euler_to_vector(hip_knee_length, roll2, pitch2, yaw2)
@@ -223,7 +141,7 @@ def update_limb_orientation():
     x_arrow.axis = vector(*R @ np.array([axis_len, 0, 0]))
     y_arrow.axis = vector(*R @ np.array([0, axis_len, 0]))
     z_arrow.axis = vector(*R @ np.array([0, 0, axis_len]))
-
+    
 
 try:
     while True:
