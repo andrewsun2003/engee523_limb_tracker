@@ -3,14 +3,9 @@
 #include <Adafruit_BNO08x.h>
 
 
-#define IMU1_CS 34
-#define IMU1_INT 2
-#define IMU1_RESET 5
-
-#define PS0 42
-#define PS1 41
-
-#define BOOTN 1
+#define IMU1_CS 1
+#define IMU1_INT 44
+#define IMU1_RESET 2
 
 #define RAD_TO_DEG 57.2958
 #define DEG_TO_RAD 0.017453
@@ -100,15 +95,6 @@ void setReports() {
 void setup(void) {
   Serial.begin(115200);
   while (!Serial) { delay(10); }
-
-  pinMode(PS0, OUTPUT);
-  digitalWrite(PS0, HIGH);
-
-  pinMode(PS1, OUTPUT);
-  digitalWrite(PS1, HIGH);
-
-  pinMode(BOOTN, OUTPUT);
-  digitalWrite(BOOTN, HIGH);
 
   if (!imu.begin_SPI(IMU1_CS, IMU1_INT)) {
     Serial.println("Failed to find BNO08x chip");
@@ -334,9 +320,20 @@ void loop() {
     Serial.print(millis()/1000); Serial.print("\t");
 
     // RAW DATA
-    Serial.print(rad.accel_roll); Serial.print("\t");
-    Serial.print(rad.accel_pitch); Serial.print("\t");
-    Serial.print(rad.mag_yaw); Serial.print("\t");
+    // Serial.print(rad.accel_roll); Serial.print("\t");
+    // Serial.print(rad.accel_pitch); Serial.print("\t");
+    // Serial.print(rad.mag_yaw); Serial.print("\t");
+    Serial.print(rd.accel_x); Serial.print("\t");
+    Serial.print(rd.accel_y); Serial.print("\t");
+    Serial.print(rd.accel_z); Serial.print("\t");
+    
+    Serial.print(rd.gyro_x); Serial.print("\t");
+    Serial.print(rd.gyro_y); Serial.print("\t");
+    Serial.print(rd.gyro_z); Serial.print("\t");
+
+    Serial.print(rd.mag_x); Serial.print("\t");
+    Serial.print(rd.mag_y); Serial.print("\t");
+    Serial.print(rd.mag_z); Serial.print("\t");
 
     // SENSOR FUSION DATA (APPLIED EKF)
     Serial.print(x[0]); Serial.print("\t");
