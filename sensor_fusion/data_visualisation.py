@@ -4,7 +4,7 @@ import matplotlib.animation as animation
 from collections import deque
 
 
-SERIAL_PORT = "COM17"
+SERIAL_PORT = "/dev/cu.usbmodem1301"
 BAUD_RATE = 115200
 OUTPUT_FILE = "imu_data.csv"
 
