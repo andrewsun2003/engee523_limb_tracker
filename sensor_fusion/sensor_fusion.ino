@@ -29,7 +29,7 @@ float x[3] = {0, 0, 0};   // State estimate
   {0, 0, 0.1}
  };
 
-float  A[3][3] = {
+float  A[3][3] = {  // System behaviour in isolation
     {1, 0, 0},
     {0, 1, 0},
     {0, 0, 1}
@@ -41,13 +41,13 @@ const float Q[3][3] = {   // Process noise covariance
   {0, 0, 0.001}
 };
 
-const float R[3][3] = {
+const float R[3][3] = {   // Measurement noise covariance
   {0.03, 0, 0},
   {0, 0.03, 0},
-  {0, 0, 0.05}
+  {0, 0, 5.0}
 };
 
-const float I[3][3] = {
+const float I[3][3] = {   // Identity matrix
   {1, 0, 0},
   {0, 1, 0},
   {0, 0, 1}
@@ -320,9 +320,6 @@ void loop() {
     Serial.print(millis()/1000); Serial.print("\t");
 
     // RAW DATA
-    // Serial.print(rad.accel_roll); Serial.print("\t");
-    // Serial.print(rad.accel_pitch); Serial.print("\t");
-    // Serial.print(rad.mag_yaw); Serial.print("\t");
     Serial.print(rd.accel_x); Serial.print("\t");
     Serial.print(rd.accel_y); Serial.print("\t");
     Serial.print(rd.accel_z); Serial.print("\t");
@@ -334,6 +331,10 @@ void loop() {
     Serial.print(rd.mag_x); Serial.print("\t");
     Serial.print(rd.mag_y); Serial.print("\t");
     Serial.print(rd.mag_z); Serial.print("\t");
+
+    Serial.print(rad.accel_roll); Serial.print("\t");
+    Serial.print(rad.accel_pitch); Serial.print("\t");
+    Serial.print(rad.mag_yaw); Serial.print("\t");
 
     // SENSOR FUSION DATA (APPLIED EKF)
     Serial.print(x[0]); Serial.print("\t");
