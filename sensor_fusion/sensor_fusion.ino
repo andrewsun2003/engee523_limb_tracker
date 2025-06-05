@@ -44,7 +44,7 @@ const float Q[3][3] = {   // Process noise covariance
 const float R[3][3] = {   // Measurement noise covariance
   {0.03, 0, 0},
   {0, 0.03, 0},
-  {0, 0, 5.0}
+  {0, 0, 0.5}
 };
 
 const float I[3][3] = {   // Identity matrix
