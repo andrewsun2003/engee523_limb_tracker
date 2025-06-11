@@ -2,12 +2,24 @@ import serial
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from collections import deque
+import csv
 
 
-SERIAL_PORT = "COM9"
+SERIAL_PORT = "/dev/cu.usbmodem11301"
 BAUD_RATE = 115200
-OUTPUT_FILE = "imu_data.csv"
+OUTPUT_FILE = "/Users/andrewsun/Downloads/engee523_limb_tracker-main/sensor_fusion/figure4.csv"
+csv_file = open(OUTPUT_FILE, mode='w', newline='')
+csv_writer = csv.writer(csv_file)
 
+csv_writer.writerow([
+    "Time",
+    # "Accel_X", "Accel_Y", "Accel_Z",
+    # "Gyro_X", "Gyro_Y", "Gyro_Z",
+    # "Mag_X", "Mag_Y", "Mag_Z",
+    "Raw_Roll", "Raw_Pitch", "Raw_Yaw",
+    "EKF_Roll", "EKF_Pitch", "EKF_Yaw",
+    "DMP_Roll", "DMP_Pitch", "DMP_Yaw"
+])
 
 ser = serial.Serial(SERIAL_PORT, BAUD_RATE)
 
@@ -48,7 +60,7 @@ def setup_axis(ax, label, y_label, y_limits):
     ax.set_ylabel(y_label)
     ax.set_title(label)
     ax.grid()
-    ax.legend(loc='lower left', bbox_to_anchor=(0, 0))
+    # ax.legend(loc='lower left', bbox_to_anchor=(0, 0))
 
 # Plot lines
 lines = {
@@ -124,6 +136,17 @@ def update(frame):
                 droll = float(parts[16])
                 dpitch= float(parts[17])
                 dyaw = float(parts[18])
+                
+                # Write row to CSV
+                csv_writer.writerow([
+                    t,
+                    # ax, ay, az,
+                    # gx, gy, gz,
+                    # mx, my, mz,
+                    rroll, rpitch, ryaw,
+                    eroll, epitch, eyaw,
+                    droll, dpitch, dyaw
+                ])
 
                 time_vals.append(t)
 
@@ -177,6 +200,37 @@ def update(frame):
                 lines['dmp']['roll'].set_data(x_vals, dmp_roll)
                 lines['dmp']['pitch'].set_data(x_vals, dmp_pitch)
                 lines['dmp']['yaw'].set_data(x_vals, dmp_yaw)
+                
+                # Update all legends with latest values
+                lines['accel']['x'].set_label(f"Accel X: {ax:.2f}")
+                lines['accel']['y'].set_label(f"Accel Y: {ay:.2f}")
+                lines['accel']['z'].set_label(f"Accel Z: {az:.2f}")
+                ax1.legend(loc='lower left', bbox_to_anchor=(0, 0))
+
+                lines['gyro']['x'].set_label(f"Gyro X: {gx:.2f}")
+                lines['gyro']['y'].set_label(f"Gyro Y: {gy:.2f}")
+                lines['gyro']['z'].set_label(f"Gyro Z: {gz:.2f}")
+                ax2.legend(loc='lower left', bbox_to_anchor=(0, 0))
+
+                lines['mag']['x'].set_label(f"Mag X: {mx:.2f}")
+                lines['mag']['y'].set_label(f"Mag Y: {my:.2f}")
+                lines['mag']['z'].set_label(f"Mag Z: {mz:.2f}")
+                ax3.legend(loc='lower left', bbox_to_anchor=(0, 0))
+
+                lines['raw']['roll'].set_label(f"Raw Roll: {rroll:.1f}°")
+                lines['raw']['pitch'].set_label(f"Raw Pitch: {rpitch:.1f}°")
+                lines['raw']['yaw'].set_label(f"Raw Yaw: {ryaw:.1f}°")
+                ax4.legend(loc='lower left', bbox_to_anchor=(0, 0))
+
+                lines['ekf']['roll'].set_label(f"EKF Roll: {eroll:.1f}°")
+                lines['ekf']['pitch'].set_label(f"EKF Pitch: {epitch:.1f}°")
+                lines['ekf']['yaw'].set_label(f"EKF Yaw: {eyaw:.1f}°")
+                ax5.legend(loc='lower left', bbox_to_anchor=(0, 0))
+
+                lines['dmp']['roll'].set_label(f"DMP Roll: {droll:.1f}°")
+                lines['dmp']['pitch'].set_label(f"DMP Pitch: {dpitch:.1f}°")
+                lines['dmp']['yaw'].set_label(f"DMP Yaw: {dyaw:.1f}°")
+                ax6.legend(loc='lower left', bbox_to_anchor=(0, 0))
 
             except ValueError:
                 continue
@@ -198,5 +252,9 @@ try:
     plt.tight_layout()
     plt.show()
     plt.ion()
+    
+    csv_file.close()
+    print("CSV file saved.")
+
 except KeyboardInterrupt:
     print("Plot closed.")
