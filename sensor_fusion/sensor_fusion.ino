@@ -44,7 +44,7 @@ const float Q[3][3] = {   // Process noise covariance
 const float R[3][3] = {   // Measurement noise covariance
   {0.03, 0, 0},
   {0, 0.03, 0},
-  {0, 0, 0.5}
+  {0, 0, 5}
 };
 
 const float I[3][3] = {   // Identity matrix
@@ -73,11 +73,11 @@ void setReports() {
     Serial.println("Could not enable accelerometer");
     while (1) { delay(10); }
   }
-  if (!imu.enableReport(SH2_GYROSCOPE_CALIBRATED, reportInterval)) {
+  if (!imu.enableReport(SH2_GYROSCOPE_UNCALIBRATED, reportInterval)) {
     Serial.println("Could not enable gyroscope");
     while (1) { delay(10); }
   }
-  if (!imu.enableReport(SH2_MAGNETIC_FIELD_CALIBRATED, reportInterval)) {
+  if (!imu.enableReport(SH2_MAGNETIC_FIELD_UNCALIBRATED, reportInterval)) {
     Serial.println("Could not enable magnetometer");
     while (1) { delay(10); }
   }
@@ -85,10 +85,10 @@ void setReports() {
     Serial.println("Could not enable stabilized remote vector");
     while (1) { delay(10); }
   }
-  if (!imu.enableReport(SH2_ARVR_STABILIZED_RV, reportInterval)) {
-    Serial.println("Could not enable stabilized remote vector");
-    while (1) { delay(10); }
-  }
+  // if (!imu.enableReport(SH2_ARVR_STABILIZED_RV, reportInterval)) {
+  //   Serial.println("Could not enable stabilized remote vector");
+  //   while (1) { delay(10); }
+  // }
 }
 
 
@@ -249,14 +249,14 @@ void loop() {
 
         break;
       }
-      case SH2_GYROSCOPE_CALIBRATED: {
+      case SH2_GYROSCOPE_UNCALIBRATED: {
         unsigned long currentTime = micros();
         float dt = (currentTime - lastTime) / 1000000.0;
         lastTime = currentTime;
 
-        rd.gyro_x = sensorValue.un.gyroscope.x;
-        rd.gyro_y = sensorValue.un.gyroscope.y;
-        rd.gyro_z = sensorValue.un.gyroscope.z;
+        rd.gyro_x = sensorValue.un.gyroscopeUncal.x;
+        rd.gyro_y = sensorValue.un.gyroscopeUncal.y;
+        rd.gyro_z = sensorValue.un.gyroscopeUncal.z;
 
         // rad.gyro_roll_rate = rd.gyro_x + rd.gyro_y*sinf(rad.gyro_roll)*tanf(rad.gyro_pitch) + rd.gyro_z*cosf(rad.gyro_roll)*tanf(rad.gyro_pitch);
         // rad.gyro_pitch_rate = rd.gyro_y*cosf(rad.gyro_roll) - rd.gyro_z*sinf(rad.gyro_roll);
@@ -276,10 +276,10 @@ void loop() {
 
         break;
       }
-      case SH2_MAGNETIC_FIELD_CALIBRATED: {
-        rd.mag_x = sensorValue.un.magneticField.x;
-        rd.mag_y = sensorValue.un.magneticField.y;
-        rd.mag_z = sensorValue.un.magneticField.z;
+      case SH2_MAGNETIC_FIELD_UNCALIBRATED: {
+        rd.mag_x = sensorValue.un.magneticFieldUncal.x;
+        rd.mag_y = sensorValue.un.magneticFieldUncal.y;
+        rd.mag_z = sensorValue.un.magneticFieldUncal.z;
 
         // rad.mag_yaw = atan2f(-rd.mag_y, rd.mag_x) * RAD_TO_DEG;
         float roll = rad.accel_roll * DEG_TO_RAD;
@@ -304,10 +304,10 @@ void loop() {
 
         break;
       }
-      case SH2_ARVR_STABILIZED_RV:
-        quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
+      // case SH2_ARVR_STABILIZED_RV:
+      //   quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
 
-        break;
+      //   break;
       case SH2_GYRO_INTEGRATED_RV:
         // faster (more noise?)
         quaternionToEulerGI(&sensorValue.un.gyroIntegratedRV, &ypr, true);
