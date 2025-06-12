@@ -53,7 +53,7 @@ const float Q[3][3] = {   // Process noise covariance
 const float R[3][3] = {   // Measurement noise covariance
   {0.03, 0, 0},
   {0, 0.03, 0},
-  {0, 0, 0.05}
+  {0, 0, 5}
 };
 
 const float I[3][3] = {   // Identity matrix
@@ -170,7 +170,7 @@ void ekf_update(struct raw_angle_data *rad, float g[3], float x[3], float x_prev
   
   // State
   for (int i = 0; i < 3; i++) {
-      x[i] = x_prev[i] + g[i];
+      x[i] = wrap_angle(x_prev[i] + g[i]);
   }
 
   // State covariance: P = A*P*A^T + Q (A = identity matrix)
@@ -250,10 +250,6 @@ void quaternionToEuler(float qr, float qi, float qj, float qk, euler_t* ypr, boo
     }
 }
 
-void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* ypr, bool degrees = false) {
-    quaternionToEuler(rotational_vector->real, rotational_vector->i, rotational_vector->j, rotational_vector->k, ypr, degrees);
-}
-
 void quaternionToEulerGI(sh2_GyroIntegratedRV_t* rotational_vector, euler_t* ypr, bool degrees = false) {
     quaternionToEuler(rotational_vector->real, rotational_vector->i, rotational_vector->j, rotational_vector->k, ypr, degrees);
 }
@@ -270,7 +266,7 @@ void loop() {
         rad.accel_roll = atan2f(rd.accel_y, rd.accel_z) * RAD_TO_DEG;
         rad.accel_pitch = atan2f(-rd.accel_x, sqrtf(rd.accel_y * rd.accel_y + rd.accel_z * rd.accel_z)) * RAD_TO_DEG;
 
-        data_ready++;
+        // data_ready++;
 
         break;
       }
@@ -283,15 +279,15 @@ void loop() {
         rd.gyro_y = sensorValue.un.gyroscope.y;
         rd.gyro_z = sensorValue.un.gyroscope.z;
 
-        g[0] += rd.gyro_x * dt * RAD_TO_DEG;
-        g[1] += rd.gyro_y * dt * RAD_TO_DEG;
-        g[2] += rd.gyro_z * dt * RAD_TO_DEG;
+        g[0] = rd.gyro_x * dt * RAD_TO_DEG;
+        g[1] = rd.gyro_y * dt * RAD_TO_DEG;
+        g[2] = rd.gyro_z * dt * RAD_TO_DEG;
 
         g[0] = wrap_angle(g[0]);
         g[1] = wrap_angle(g[1]);
         g[2] = wrap_angle(g[2]);
 
-        data_ready++;
+        // data_ready++;
 
         break;
       }
@@ -319,7 +315,7 @@ void loop() {
           rad.mag_yaw = wrap_angle(rad.mag_yaw);
         }
 
-        data_ready++;
+        // data_ready++;
 
         break;
       }
@@ -327,7 +323,7 @@ void loop() {
         dmp_yaw_received = true;
         quaternionToEulerGI(&sensorValue.un.gyroIntegratedRV, &ypr, true);
 
-        data_ready++;
+        // data_ready++;
 
         break;
     }
@@ -337,7 +333,7 @@ void loop() {
       offset_flag = false;  // Only do this once
     }
 
-    if (offset_flag == false && data_ready == 4) {
+    if (offset_flag == false) {    // && data_ready == 4) {
       ekf_update(&rad, g, x, x_prev, P, A, Q, R, I);
       
       Serial.print(millis()/1000); Serial.print("\t");
@@ -369,7 +365,7 @@ void loop() {
       Serial.print(ypr.pitch);  Serial.print("\t");
       Serial.println(ypr.yaw);
 
-      data_ready = 0;
+      // data_ready = 0;
     }
 
     }
