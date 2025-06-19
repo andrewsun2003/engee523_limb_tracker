@@ -3,12 +3,11 @@
 #include <Adafruit_BNO08x.h>
 
 
-#define IMU1_CS 1
+#define IMU1_CS 4
 #define IMU1_INT 44
-#define IMU1_RESET 2
+#define IMU1_RESET 43
 
 #define RAD_TO_DEG 57.2958
-#define DEG_TO_RAD 0.017453
 
 bool offset_flag = true;
 bool mag_yaw_received = false;
@@ -37,9 +36,9 @@ float g[3] = {0, 0, 0};   // State estimate
 float x_prev[3] = {0, 0, 0};   // State estimate
 
  float P[3][3] = {  // Covariance matrix (3x3)
-  {0.1, 0, 0},
-  {0, 0.1, 0},
-  {0, 0, 0.1}
+  {0.01, 0, 0},
+  {0, 0.01, 0},
+  {0, 0, 0.01}
  };
 
 float  A[3][3] = {  // System behaviour in isolation
@@ -49,15 +48,15 @@ float  A[3][3] = {  // System behaviour in isolation
 };  
 
 const float Q[3][3] = {   // Process noise covariance
-  {0.002, 0, 0},
-  {0, 0.002, 0},
-  {0, 0, 0.003}
+  {0.001, 0, 0},
+  {0, 0.001, 0},
+  {0, 0, 0.001}
 };
 
 const float R[3][3] = {   // Measurement noise covariance
   {0.03, 0, 0},
   {0, 0.03, 0},
-  {0, 0, 4}
+  {0, 0, 0.05}
 };
 
 const float I[3][3] = {   // Identity matrix
@@ -142,8 +141,8 @@ void quaternionToEulerGI(sh2_GyroIntegratedRV_t* rotational_vector, euler_t* ypr
 
 
 float wrap_angle(float angle) {
-  while (angle > 180.0f) angle -= 360.0f;
-  while (angle < -180.0f) angle += 360.0f;
+  while (angle > M_PI) angle -= 2.0f * M_PI;
+  while (angle < -M_PI) angle += 2.0f * M_PI;
   return angle;
 }
 
@@ -213,7 +212,7 @@ void ekf_update(struct raw_angle_data *rad, float g[3], float x[3], float x_prev
   // Measurement residual: y = z - Hx
   float y[3];
   for (int i = 0; i < 3; i++) {
-    y[i] = z[i] - x[i];
+    y[i] = wrap_angle(z[i] - x[i]);
   }
 
   // Innovation covariance: S = H*P*H^T + R
@@ -268,8 +267,8 @@ void loop() {
         rd.accel_y = sensorValue.un.accelerometer.y;
         rd.accel_z = sensorValue.un.accelerometer.z;
 
-        rad.accel_roll = atan2f(rd.accel_y, rd.accel_z) * RAD_TO_DEG;
-        rad.accel_pitch = atan2f(-rd.accel_x, sqrtf(rd.accel_y * rd.accel_y + rd.accel_z * rd.accel_z)) * RAD_TO_DEG;
+        rad.accel_roll = atan2f(rd.accel_y, rd.accel_z);
+        rad.accel_pitch = atan2f(-rd.accel_x, sqrtf(rd.accel_y * rd.accel_y + rd.accel_z * rd.accel_z));
 
         break;
       }
@@ -288,9 +287,9 @@ void loop() {
         gyro_filtered[2] = alpha * rd.gyro_z + (1 - alpha) * gyro_filtered[2];
 
         // Integrate filtered gyro data (convert to degrees)
-        g[0] = gyro_filtered[0] * dt * RAD_TO_DEG;
-        g[1] = gyro_filtered[1] * dt * RAD_TO_DEG;
-        g[2] = gyro_filtered[2] * dt * RAD_TO_DEG;
+        g[0] = gyro_filtered[0] * dt;
+        g[1] = gyro_filtered[1] * dt;
+        g[2] = gyro_filtered[2] * dt;
 
         g[0] = wrap_angle(g[0]);
         g[1] = wrap_angle(g[1]);
@@ -305,15 +304,15 @@ void loop() {
         rd.mag_y = sensorValue.un.magneticField.y;
         rd.mag_z = sensorValue.un.magneticField.z;
 
-        float roll = rad.accel_roll * DEG_TO_RAD;
-        float pitch = rad.accel_pitch * DEG_TO_RAD;
+        float roll = rad.accel_roll;
+        float pitch = rad.accel_pitch;
 
         // Tilt-compensated magnetic field
-        // float Bx = rd.mag_x * cos(pitch) + rd.mag_z * sin(pitch);
-        // float By = rd.mag_x * sin(roll) * sin(pitch) + rd.mag_y * cos(roll) - rd.mag_z * sin(roll) * cos(pitch);
+        float Bx = rd.mag_x * cos(pitch) + rd.mag_z * sin(pitch);
+        float By = rd.mag_x * sin(roll) * sin(pitch) + rd.mag_y * cos(roll) - rd.mag_z * sin(roll) * cos(pitch);
 
-        // rad.mag_yaw = atan2f(-By, Bx) * RAD_TO_DEG;
-        rad.mag_yaw = atan2f(rd.mag_y, rd.mag_x) * RAD_TO_DEG;
+        rad.mag_yaw = atan2f(-By, Bx);
+        // rad.mag_yaw = atan2f(rd.mag_y, rd.mag_x) * RAD_TO_DEG;
         rad.mag_yaw = wrap_angle(rad.mag_yaw);
 
         if (offset_flag == false) {
@@ -353,14 +352,14 @@ void loop() {
       Serial.print(rd.mag_y); Serial.print("\t");
       Serial.print(rd.mag_z); Serial.print("\t");
 
-      Serial.print(rad.accel_roll); Serial.print("\t");
-      Serial.print(rad.accel_pitch); Serial.print("\t");
-      Serial.print(rad.mag_yaw); Serial.print("\t");
+      Serial.print(rad.accel_roll * RAD_TO_DEG); Serial.print("\t");
+      Serial.print(rad.accel_pitch * RAD_TO_DEG); Serial.print("\t");
+      Serial.print(rad.mag_yaw * RAD_TO_DEG); Serial.print("\t");
 
       // SENSOR FUSION DATA (APPLIED EKF)
-      Serial.print(x[0]); Serial.print("\t");
-      Serial.print(x[1]); Serial.print("\t");
-      Serial.print(x[2]); Serial.print("\t");
+      Serial.print(x[0] * RAD_TO_DEG); Serial.print("\t");
+      Serial.print(x[1] * RAD_TO_DEG); Serial.print("\t");
+      Serial.print(x[2] * RAD_TO_DEG); Serial.print("\t");
 
       // DMP DATA 
       Serial.print(ypr.roll); Serial.print("\t");
