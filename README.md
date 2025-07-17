@@ -9,7 +9,7 @@ This project implements a multi-sensor orientation tracking system using three I
 
 Below is a frame from the live **3D IMU visualisation** representing a leg mechanism composed of three stacked IMUs (shin, thigh, hip):
 
-![3-IMU Leg Visualisation](Screenshot 2025-07-18 at 10.13.34 am.png)
+![3-IMU Leg Visualisation](photos/3D IMU Leg Visualisation.png)
 
 ---
 
