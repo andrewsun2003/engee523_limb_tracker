@@ -166,6 +166,7 @@ engee523_limb_tracker-main/
                 device_1.ino
             device_2/
                 device_2.ino
+        photos
         sensor_fusion/
             calibration_gimbal.zip
             data_visualisation.py
