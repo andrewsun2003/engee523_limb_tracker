@@ -1,5 +1,5 @@
 
-# 3-IMU Leg Visualisation and Orientation Estimation using EKF
+# Leg Visualisation and Orientation Estimation using EKF
 
 ## Overview
 This project implements a multi-sensor orientation tracking system using three IMUs and an **Extended Kalman Filter (EKF)**. It estimates roll, pitch, and yaw for a simulated leg mechanism. The system fuses gyroscope, accelerometer, and magnetometer data to improve accuracy and reduce drift in real-time orientation estimation.
@@ -136,12 +136,12 @@ Orientation tracking was evaluated using a custom **laser-engraved MDF gimbal** 
 
 ---
 
-## Custom PCB Designs
+## Custom PCB Designs for Leg Visualisation
 
-### Device 1: EKF + IMU Integration Board
+### Device 1: ESP32-S2-Devkit-C1 IMU Board
 ![Device 1 PCB](photos/device1_pcb.png)
 
-### Device 2: ESP32-Based IMU Module
+### Device 2: XIAO ESP32-S3 IMU Board
 ![Device 2 PCB](photos/device2_pcb.png)
 
 ## Repository Structure
