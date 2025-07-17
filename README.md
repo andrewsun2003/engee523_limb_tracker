@@ -1,3 +1,4 @@
+
 # 3-IMU Leg Visualisation and Orientation Estimation using EKF
 
 ## Overview
@@ -9,7 +10,7 @@ This project implements a multi-sensor orientation tracking system using three I
 
 Below is a frame from the live **3D IMU visualisation** representing a leg mechanism composed of three stacked IMUs (shin, thigh, hip):
 
-![3-IMU Leg Visualisation](photos/Screenshot 2025-07-18 at 10.13.34 am.png)
+![3-IMU Leg Visualisation](photos/imu_leg_visualisation.png)
 
 ---
 
@@ -105,6 +106,14 @@ void ekf_update(struct raw_angle_data *rad, float g[3], float x[3], float x_prev
 
 ---
 
+
+## Calibration Setup
+
+Orientation tracking was calibrated using the following custom-built laser-engraved MDF gimbal with concentric rotational axes:
+
+![Calibration Gimbal](photos/calibration_gimbal.png)
+
+
 ## Performance Evaluation
 
 Orientation tracking was evaluated using a custom **laser-engraved MDF gimbal** rotated in 5° steps. Error histograms and uncertainty analysis were produced:
@@ -138,12 +147,29 @@ Orientation tracking was evaluated using a custom **laser-engraved MDF gimbal** 
 ## Repository Structure
 ```
 engee523_limb_tracker-main/
-├── ekf.c
-├── ekf.h
-├── imu_read.c
-├── main.c
-├── visualiser.py
-├── README.md
+    engee523_limb_tracker-main/
+        README.md
+        limb_tracking/
+            master.py
+            CAD/
+                CAD for Andrew PCB.SLDASM
+                Mount Cover.SLDPRT
+                PCB.step
+                Quck Release - Mount - Standard - Andrew.SLDPRT
+                STL/
+                    Mount Cover.STL
+                    Quck Release - Mount - Standard - Andrew.STL
+            PCB Design/
+                PCB Design - XIAO ESP32.zip
+                PCB Design.zip
+            device_1/
+                device_1.ino
+            device_2/
+                device_2.ino
+        sensor_fusion/
+            calibration_gimbal.zip
+            data_visualisation.py
+            sensor_fusion.ino
 ```
 
 ---
@@ -155,8 +181,3 @@ engee523_limb_tracker-main/
 - **Host Tools**: Real-time serial data parser and visualisation
 
 ---
-
-## References
-- Extended Kalman Filter concepts
-- Bosch BNO08x datasheets
-- ENGEE523 Technical Report (2025)
