@@ -9,7 +9,7 @@ This project implements a multi-sensor orientation tracking system using three I
 
 Below is a frame from the live **3D IMU visualisation** representing a leg mechanism composed of three stacked IMUs (shin, thigh, hip):
 
-![3-IMU Leg Visualisation](photos/3D IMU Leg Visualisation.png)
+![3-IMU Leg Visualisation](photos/imu_leg_visualisation.png)
 
 ---
 
@@ -81,10 +81,6 @@ engee523_limb_tracker-main/
 - **IMU**: BNO08x (SPI interface)
 - **Display**: Python 3D visualiser with `matplotlib`
 - **Host Tools**: Real-time serial data parser and visualisation
-
+- **Limb Tracker**: Custom made PCBs with BNO08x IMU chip and ESP32 microcontrollers
+  
 ---
-
-## References
-- Extended Kalman Filter concepts
-- Bosch BNO08x datasheets
-- ENGEE523 Technical Report (2025)
